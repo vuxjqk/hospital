@@ -2,15 +2,15 @@
 <html>
 
 <head>
-    <title>Quản lý hồ sơ bệnh án</title>
+    <title>Quản lý lịch khám</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="container mt-5">
-        <h1>Quản lý hồ sơ bệnh án</h1>
-        {{-- <a href="{{ route('medical_records.create') }}" class="btn btn-primary mb-3">Thêm hồ sơ bệnh án</a> --}}
-        <form method="GET" action="{{ route('medical_records.index') }}" class="mb-3">
+        <h1>Quản lý lịch khám</h1>
+        <a href="{{ route('appointments.create') }}" class="btn btn-primary mb-3">Thêm lịch khám</a>
+        <form method="GET" action="{{ route('appointments.index') }}" class="mb-3">
             <div class="input-group">
                 <input type="text" name="search" class="form-control" placeholder="Tìm theo tên hoặc số BHYT"
                     value="{{ $search }}">
@@ -24,65 +24,65 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Số CCCD</th>
                     <th>Tên</th>
-                    <th>Loại</th>
-                    <th>Có BHYT</th>
+                    <th>STT</th>
+                    <th>Trạng thái</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($medical_records as $medical_record)
+                @foreach ($appointments as $appointment)
                     <tr>
-                        <td>{{ $medical_record->id }}</td>
-                        <td>{{ $medical_record->patient->national_id }}</td>
-                        <td>{{ $medical_record->patient->name }}</td>
-                        <td>{{ $medical_record->type }}</td>
-                        <td>{{ $medical_record->has_insurance }}</td>
+                        <td>{{ $appointment->id }}</td>
+                        <td>{{ $appointment->patient->name }}</td>
+                        <td>{{ $appointment->queue_number }}</td>
+                        <td>{{ $appointment->status }}</td>
                         <td>
-                            {{-- <a href="{{ route('medical_records.show', $medical_record) }}"
-                                class="btn btn-info btn-sm">Xem</a>
-                            <a href="{{ route('medical_records.edit', $medical_record) }}"
+                            {{-- <a href="{{ route('appointments.show', $appointment) }}" class="btn btn-info btn-sm">Xem</a>
+                            <a href="{{ route('appointments.edit', $appointment) }}"
                                 class="btn btn-warning btn-sm">Sửa</a>
-                            <form action="{{ route('medical_records.destroy', $medical_record) }}" method="POST"
+                            <form action="{{ route('appointments.destroy', $appointment) }}" method="POST"
                                 style="display:inline;">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Xóa hồ sơ bệnh án này?')">Xóa</button>
+                                    onclick="return confirm('Xóa lịch khám này?')">Xóa</button>
                             </form> --}}
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal" data-patient-id="{{ $medical_record->patient->id }}"
-                                data-medical_record-id="{{ $medical_record->id }}">
-                                Chọn
+                                data-bs-target="#exampleModal" data-appointment-id="{{ $appointment->id }}">
+                                Khám
                             </button>
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
-        {{ $medical_records->links() }}
+        {{ $appointments->links() }}
     </div>
 
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form method="POST" action="{{ route('appointments.store') }}">
+                <form method="POST" id="appointmentForm">
+                    @csrf
+                    @method('PUT')
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        @csrf
-                        <input type="hidden" name="medical_record_id" id="modalMedicalRecordId">
-                        <input type="hidden" name="patient_id" id="modalPatientId">
+                        <input type="hidden" name="appointment_id" id="modalAppointmentId">
                         <div class="mb-3">
-                            <select class="form-select" aria-label="Default select example" name="specialty_id">
-                                <option value="">--- Chọn chuyên khoa ---</option>
-                                @foreach ($specialties as $specialty)
-                                    <option value="{{ $specialty->id }}">{{ $specialty->name }}</option>
-                                @endforeach
-                            </select>
+                            <label class="form-label">Triệu chứng</label>
+                            <input type="text" name="symptoms" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Chẩn đoán</label>
+                            <input type="text" name="diagnosis" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Lưu ý</label>
+                            <input type="text" name="note" class="form-control">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -95,12 +95,14 @@
     </div>
 
     <script>
-        document.getElementById('exampleModal').addEventListener('show.bs.modal', function(event) {
+        const modal = document.getElementById('exampleModal');
+        modal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
-            const patientId = button.getAttribute('data-patient-id');
-            const medicalRecordId = button.getAttribute('data-medical_record-id');
-            document.getElementById('modalPatientId').value = patientId;
-            document.getElementById('modalMedicalRecordId').value = medicalRecordId;
+            const id = button.getAttribute('data-appointment-id');
+            const form = document.getElementById('appointmentForm');
+
+            // Đúng route RESTful: /appointments/{id}
+            form.action = `{{ route('appointments.update', ':id') }}`.replace(':id', id);
         });
     </script>
 
