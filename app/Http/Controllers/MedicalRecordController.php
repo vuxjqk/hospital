@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Appointment;
 use App\Models\MedicalRecord;
+use App\Models\Patient;
 use App\Models\Specialty;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class MedicalRecordController extends Controller
@@ -14,13 +17,17 @@ class MedicalRecordController extends Controller
      */
     public function index(Request $request)
     {
-        $specialties = Specialty::all();
-
         $search = $request->input('search');
-        $medical_records = MedicalRecord::when($search, function ($query, $search) {
-            return $query->where('patient_id', 'like', "%{$search}%");
-        })->paginate(10);
-        return view('medical_records.index', compact('medical_records', 'search', 'specialties'));
+        $patients = Patient::when($search, function ($query, $search) {
+            return $query->where('name', 'like', "%{$search}%")
+                ->orWhere('national_id', 'like', "%{$search}%")
+                ->orWhere('insurance_number', 'like', "%{$search}%");
+        })->paginate(5);
+
+        $specialties = Specialty::all();
+        $medical_records = MedicalRecord::all();
+
+        return view('medical_records.index', compact('medical_records', 'search', 'specialties', 'patients'));
     }
 
     /**
@@ -38,17 +45,37 @@ class MedicalRecordController extends Controller
     {
         $request->validate([
             'patient_id' => 'required|exists:patients,id',
-            'type' => 'nullable|string|max:255',
+            'specialty_id' => 'nullable|exists:specialties,id',
         ]);
 
-        MedicalRecord::create([
+        $data = [
             'patient_id' => $request->patient_id,
-            'type' => $request->type,
             'record_date' => now(),
             'has_insurance' => $request->has('has_insurance'),
-        ]);
+        ];
 
-        return redirect()->route('patients.index')->with('success', 'Hồ sơ bệnh án đã được thêm.');
+        if ($request->filled('type')) {
+            $data['type'] = $request->input('type');
+        }
+
+        $record = MedicalRecord::create($data);
+
+        if ($request->input('type') != "inpatient") {
+            $today = today();
+
+            $queueNumber = Appointment::where('specialty_id', $request->specialty_id)
+                ->whereDate('created_at', $today)
+                ->count() + 1;
+
+            Appointment::create([
+                'medical_record_id' => $record->id,
+                'patient_id' => $request->patient_id,
+                'specialty_id' => $request->specialty_id,
+                'queue_number' => $queueNumber,
+            ]);
+        }
+
+        return redirect()->route('medical_records.index')->with('success', 'Hồ sơ bệnh án đã được thêm.');
     }
 
     /**

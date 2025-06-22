@@ -16,10 +16,10 @@ class PatientController extends Controller
         $search = $request->input('search');
         $patients = Patient::when($search, function ($query, $search) {
             return $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('national_id', 'like', "%{$search}%")
-                        ->orWhere('insurance_number', 'like', "%{$search}%");
+                ->orWhere('national_id', 'like', "%{$search}%")
+                ->orWhere('insurance_number', 'like', "%{$search}%");
         })->paginate(10);
-        return view('patients.index', compact('patients', 'search'));
+        return view('medical_records.index', compact('patients', 'search'));
     }
 
     /**
@@ -46,7 +46,7 @@ class PatientController extends Controller
         ]);
 
         Patient::create($request->all());
-        return redirect()->route('patients.index')->with('success', 'Bệnh nhân đã được thêm.');
+        return redirect()->route('medical_records.index')->with('success', 'Bệnh nhân đã được thêm.');
     }
 
     /**

@@ -1,13 +1,16 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Quản lý lịch khám
-        </h2>
-    </x-slot>
+<!DOCTYPE html>
+<html>
 
+<head>
+    <title>Quản lý chuyên khoa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
     <div class="container mt-5">
-        <a href="{{ route('appointments.create') }}" class="btn btn-primary mb-3">Thêm lịch khám</a>
-        <form method="GET" action="{{ route('appointments.index') }}" class="mb-3">
+        <h1>Quản lý chuyên khoa</h1>
+        <a href="{{ route('specialties.create') }}" class="btn btn-primary mb-3">Thêm chuyên khoa</a>
+        <form method="GET" action="{{ route('specialties.index') }}" class="mb-3">
             <div class="input-group">
                 <input type="text" name="search" class="form-control" placeholder="Tìm theo tên hoặc số BHYT"
                     value="{{ $search }}">
@@ -22,64 +25,63 @@
                 <tr>
                     <th>ID</th>
                     <th>Tên</th>
-                    <th>STT</th>
-                    <th>Trạng thái</th>
+                    <th>Phí</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($appointments as $appointment)
+                @foreach ($specialties as $specialty)
                     <tr>
-                        <td>{{ $appointment->id }}</td>
-                        <td>{{ $appointment->patient->name }}</td>
-                        <td>{{ $appointment->queue_number }}</td>
-                        <td>{{ $appointment->status }}</td>
+                        <td>{{ $specialty->id }}</td>
+                        <td>{{ $specialty->name }}</td>
+                        <td>{{ $specialty->fee }}</td>
                         <td>
-                            {{-- <a href="{{ route('appointments.show', $appointment) }}" class="btn btn-info btn-sm">Xem</a>
-                            <a href="{{ route('appointments.edit', $appointment) }}"
-                                class="btn btn-warning btn-sm">Sửa</a>
-                            <form action="{{ route('appointments.destroy', $appointment) }}" method="POST"
+                            <a href="{{ route('specialties.show', $specialty) }}" class="btn btn-info btn-sm">Xem</a>
+                            <a href="{{ route('specialties.edit', $specialty) }}" class="btn btn-warning btn-sm">Sửa</a>
+                            <form action="{{ route('specialties.destroy', $specialty) }}" method="POST"
                                 style="display:inline;">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Xóa lịch khám này?')">Xóa</button>
-                            </form> --}}
+                                    onclick="return confirm('Xóa chuyên khoa này?')">Xóa</button>
+                            </form>
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal" data-appointment-id="{{ $appointment->id }}">
-                                Khám
+                                data-bs-target="#exampleModal" data-specialty-id="{{ $specialty->id }}">
+                                Chọn
                             </button>
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
-        {{ $appointments->links() }}
+        {{ $specialties->links() }}
     </div>
 
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form method="POST" id="appointmentForm">
+                <form method="POST" action="{{ route('medical_records.store') }}">
                     @csrf
-                    @method('PUT')
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" name="appointment_id" id="modalAppointmentId">
+                        <input type="hidden" name="specialty_id" id="modalspecialtyId">
                         <div class="mb-3">
-                            <label class="form-label">Triệu chứng</label>
-                            <input type="text" name="symptoms" class="form-control">
+                            <select class="form-select" aria-label="Default select example" name="type">
+                                <option value="outspecialty">Ngoại trú</option>
+                                <option value="inspecialty">Nội trú</option>
+                            </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Chẩn đoán</label>
-                            <input type="text" name="diagnosis" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Lưu ý</label>
-                            <input type="text" name="note" class="form-control">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="checkDefault"
+                                    name="has_insurance" value="1">
+                                <label class="form-check-label" for="checkDefault">
+                                    Có bảo hiểm y tế?
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -92,18 +94,16 @@
     </div>
 
     <script>
-        const modal = document.getElementById('exampleModal');
-        modal.addEventListener('show.bs.modal', function(event) {
+        document.getElementById('exampleModal').addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
-            const id = button.getAttribute('data-appointment-id');
-            const form = document.getElementById('appointmentForm');
-
-            // Đúng route RESTful: /appointments/{id}
-            form.action = `{{ route('appointments.update', ':id') }}`.replace(':id', id);
+            const specialtyId = button.getAttribute('data-specialty-id');
+            document.getElementById('modalspecialtyId').value = specialtyId;
         });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous">
     </script>
-</x-app-layout>
+</body>
+
+</html>
