@@ -6,7 +6,10 @@ use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\ServiceRequestController;
+use App\Http\Controllers\ServiceRequestDetailController;
 use App\Http\Controllers\SpecialtyController;
+use App\Models\ServiceRequest;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -29,6 +32,16 @@ Route::middleware('auth')->group(function () {
         Route::resource('doctors', DoctorController::class);
         Route::resource('specialties', SpecialtyController::class);
         Route::resource('services', ServiceController::class);
+        Route::get('/service_requests/create/{appointment_id}', [ServiceRequestController::class, 'create'])->name('service_requests.create');
+        Route::post('/service_requests', [ServiceRequestController::class, 'store'])->name('service-requests.store');
+        Route::get('/service-request-details', [ServiceRequestDetailController::class, 'index'])
+            ->name('service-request-details.index');
+
+        Route::post('/service-request-details', [ServiceRequestDetailController::class, 'store'])
+            ->name('service-request-details.store');
+
+        Route::get('/service-request-details/{id}', [ServiceRequestDetailController::class, 'show'])
+            ->name('service-request-details.show');
     });
 
     Route::middleware('can:is-doctor')->group(function () {

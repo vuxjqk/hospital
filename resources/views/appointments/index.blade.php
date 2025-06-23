@@ -48,6 +48,14 @@
                                 data-bs-target="#exampleModal" data-appointment-id="{{ $appointment->id }}">
                                 Khám
                             </button>
+                            {{-- <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#exampleModal1" data-appointment-id="{{ $appointment->id }}">
+                                Dịch vụ
+                            </button> --}}
+                            <a href="{{ route('service_requests.create', ['appointment_id' => $appointment->id]) }}"
+                                class="btn btn-secondary btn-sm">
+                                Dịch vụ
+                            </a>
                         </td>
                     </tr>
                 @endforeach
@@ -71,6 +79,47 @@
                         <div class="mb-3">
                             <label class="form-label">Triệu chứng</label>
                             <input type="text" name="symptoms" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Chẩn đoán</label>
+                            <input type="text" name="diagnosis" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Lưu ý</label>
+                            <input type="text" name="note" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" id="appointmentForm">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Dịch vụ</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="appointment_id" id="modalAppointmentId">
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả</label>
+                            <input type="text" name="description" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <select class="form-select" name="service_id[]" required>
+                                @foreach ($services as $service)
+                                    <option value="{{ $service->id }}">{{ $service->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Chẩn đoán</label>

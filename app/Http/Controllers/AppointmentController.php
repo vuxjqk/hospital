@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -14,11 +15,13 @@ class AppointmentController extends Controller
      */
     public function index(Request $request)
     {
+        $services = Service::all();
+
         $search = $request->input('search');
         $appointments = Appointment::when($search, function ($query, $search) {
             return $query->where('patient_id', 'like', "%{$search}%");
         })->paginate(10);
-        return view('appointments.index', compact('appointments', 'search'));
+        return view('appointments.index', compact('appointments', 'search', 'services'));
     }
 
     /**
