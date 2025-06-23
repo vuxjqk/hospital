@@ -6,7 +6,6 @@
     </x-slot>
 
     <div class="container mt-5">
-        <a href="{{ route('appointments.create') }}" class="btn btn-primary mb-3">Thêm lịch khám</a>
         <form method="GET" action="{{ route('appointments.index') }}" class="mb-3">
             <div class="input-group">
                 <input type="text" name="search" class="form-control" placeholder="Tìm theo tên hoặc số BHYT"
@@ -64,18 +63,18 @@
                     @csrf
                     @method('PUT')
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Khám bệnh</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="appointment_id" id="modalAppointmentId">
                         <div class="mb-3">
                             <label class="form-label">Triệu chứng</label>
-                            <input type="text" name="symptoms" class="form-control">
+                            <input type="text" name="symptoms" class="form-control" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Chẩn đoán</label>
-                            <input type="text" name="diagnosis" class="form-control">
+                            <input type="text" name="diagnosis" class="form-control" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Lưu ý</label>
